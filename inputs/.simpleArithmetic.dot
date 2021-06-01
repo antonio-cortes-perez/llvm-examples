@@ -1,0 +1,5 @@
+digraph "CFG for 'simpleArithmetic' function" {
+	label="CFG for 'simpleArithmetic' function";
+
+	Node0x1225560 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{entry:\l  %add = add nsw i32 %B, %C\l  %sub = sub nsw i32 %add, %D\l  %add1 = add nsw i32 %sub, %C\l  %sub2 = sub nsw i32 %add, %D\l  ret i32 %sub2\l}"];
+}
