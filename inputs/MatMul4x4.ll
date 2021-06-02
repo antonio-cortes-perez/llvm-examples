@@ -34,7 +34,7 @@ for.body4:                                        ; preds = %for.cond1
   %idx.ext = sext i32 %mul to i64
   %add.ptr = getelementptr inbounds i32, i32* %A, i64 %idx.ext
   %idx.ext5 = sext i32 %IdxB.0 to i64
-  %add.ptr6 = getelementptr inbounds i32, i32* %A, i64 %idx.ext5
+  %add.ptr6 = getelementptr inbounds i32, i32* %B, i64 %idx.ext5
   store i32 0, i32* %C.addr.1, align 4, !tbaa !2
   br label %for.cond7
 
