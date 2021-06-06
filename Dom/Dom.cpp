@@ -15,11 +15,20 @@ struct Dom : PassInfoMixin<Dom> {
   using DomMap = std::unordered_map<const BasicBlock *, DomSet>;
 
   PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
-    dom(F);
+    SmallVector<const BasicBlock *, 16> PostOrder;
+    postOrder(&F.getEntryBlock(), PostOrder);
+    outs() << "Post-order\n";
+    dom(F, PostOrder);
+
+    SmallVector<const BasicBlock *, 16> ReversePostOrder(PostOrder.rbegin(),
+                                                         PostOrder.rend());
+    outs() << "\nReverse post-order\n";
+    dom(F, ReversePostOrder);
+
     return PreservedAnalyses::all();
   }
 
-  void dom(Function &F) {
+  void dom(Function &F, SmallVectorImpl<const BasicBlock *> &Order) {
     DomSet AllBB;
     for (const auto &BB : F) {
       AllBB.insert(&BB);
@@ -40,7 +49,7 @@ struct Dom : PassInfoMixin<Dom> {
     while (Changed) {
       Changed = false;
       Iteration++;
-      for (const BasicBlock *BB : AllBB) {
+      for (const BasicBlock *BB : Order) {
         DomSet &DomBB = D[BB];
 
         // Compute new Dom.
@@ -57,8 +66,8 @@ struct Dom : PassInfoMixin<Dom> {
         }
       }
     }
-    print(D);
     outs() << "Iterations: " << Iteration << "\n";
+    print(D);
   }
 
   void intersection(DomSet &A, const DomSet &B) {
@@ -81,6 +90,23 @@ struct Dom : PassInfoMixin<Dom> {
       }
       outs() << "\n";
     }
+  }
+
+  void postOrder(const BasicBlock *BB,
+                 SmallVectorImpl<const BasicBlock *> &PostOrder) {
+    SmallPtrSet<const BasicBlock *, 32> Visited;
+    dfs(BB, Visited, PostOrder);
+  }
+
+  void dfs(const BasicBlock *BB, SmallPtrSetImpl<const BasicBlock *> &Visited,
+           SmallVectorImpl<const BasicBlock *> &PostOrder) {
+    Visited.insert(BB);
+    for (auto *S : successors(BB)) {
+      if (Visited.count(S) == 0) {
+        dfs(S, Visited, PostOrder);
+      }
+    }
+    PostOrder.push_back(BB);
   }
 };
 
