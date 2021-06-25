@@ -1,9 +1,8 @@
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
 #include "llvm/Support/raw_ostream.h"
-
-#include <unordered_map>
-#include <unordered_set>
+#include "llvm/ADT/SmallPtrSet.h"
+#include "llvm/ADT/DenseMap.h"
 
 using namespace llvm;
 
@@ -11,8 +10,8 @@ namespace {
 
 struct Dom : PassInfoMixin<Dom> {
 
-  using DomSet = std::unordered_set<const BasicBlock *>;
-  using DomMap = std::unordered_map<const BasicBlock *, DomSet>;
+  using DomSet = SmallPtrSet<const BasicBlock *, 32>;
+  using DomMap = DenseMap<const BasicBlock *, DomSet>;
 
   PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
     SmallVector<const BasicBlock *, 16> PostOrder;
@@ -38,7 +37,7 @@ struct Dom : PassInfoMixin<Dom> {
     // itself.
     DomMap D;
     for (const auto &BB : F) {
-      D.emplace(&BB, AllBB);
+      D.try_emplace(&BB, AllBB);
     }
     D[&F.getEntryBlock()].clear();
     D[&F.getEntryBlock()].insert(&F.getEntryBlock());
@@ -112,8 +111,8 @@ struct Dom : PassInfoMixin<Dom> {
 
 } // namespace
 
-// PM Registration
-llvm::PassPluginLibraryInfo getDomPluginInfo() {
+extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
+llvmGetPassPluginInfo() {
   return {LLVM_PLUGIN_API_VERSION, "Dom", LLVM_VERSION_STRING,
           [](PassBuilder &PB) {
             PB.registerPipelineParsingCallback(
@@ -126,9 +125,4 @@ llvm::PassPluginLibraryInfo getDomPluginInfo() {
                   return false;
                 });
           }};
-}
-
-extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
-llvmGetPassPluginInfo() {
-  return getDomPluginInfo();
 }

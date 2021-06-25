@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13.4)
 project(dom)
-set(LT_LLVM_INSTALL_DIR "/usr/lib/llvm-11" CACHE PATH "LLVM installation directory")
+set(LT_LLVM_INSTALL_DIR "/usr/lib/llvm-12" CACHE PATH "LLVM installation directory")
 list(APPEND CMAKE_PREFIX_PATH "${LT_LLVM_INSTALL_DIR}/lib/cmake/llvm/")
 find_package(LLVM REQUIRED CONFIG)
 include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
